@@ -79,6 +79,9 @@ RUN addgroup -S whereintheworld && \
 WORKDIR /home/whereintheworld/code
 USER whereintheworld
 
-# Expose container port and run entry point script
-EXPOSE 8000
-CMD ["./bin/docker"]
+# a couple of directories that yarn seems to get very sad if they don't exist?
+RUN mkdir /home/whereintheworld/.cache
+RUN mkdir /home/whereintheworld/.cache/yarn
+
+# default to running the backend, but ./bin/frontend is also OK here
+CMD ["./bin/backend"]

@@ -8,15 +8,20 @@ services:
             POSTGRES_PASSWORD: whereintheworld
             POSTGRES_DB: whereintheworld
         ports:
-            - "5433:5432"
-    app:
+            - "5432:5432"
+    backend:
         ## Uncomment below to use remote image
         # image: ghcr.io/posthog/whereintheworld
         ## or below to use local image
         build: .
+        command: "./bin/backend"
         volumes:
             - .:/home/whereintheworld/code
         environment:
+            GUNICORN_PORT: 8000
+            GUNICORN_LOGLEVEL: "debug"
+            GUNICORN_WORKERS: 1
+            GUNICORN_THREADS: 1
             DB_HOST: postgres
             DEBUG: "1"
             ALLOWED_HOSTS: "*"
@@ -33,13 +38,26 @@ services:
         depends_on:
             migrate:
                 condition: service_completed_successfully
-
+    frontend:
+        ## Uncomment below to use remote image
+        # image: ghcr.io/posthog/whereintheworld
+        ## or below to use local image
+        build: .
+        command: "./bin/frontend"
+        volumes:
+            - .:/home/whereintheworld/code
+        environment:
+            MAPS_API_KEY: $MAPS_API_KEY
+        ports:
+            - "3000:3000"
     migrate:
         build:
             context: .
         entrypoint: ["sh",  "-c"]
         command:
             - python manage.py migrate
+        links:
+            - "postgres:postgres"
         depends_on:
             postgres:
                 condition: service_started

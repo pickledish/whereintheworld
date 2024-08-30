@@ -1,0 +1,12 @@
+#!/bin/sh
+set -euxo pipefail
+
+gunicorn backend.wsgi \
+    --bind 0.0.0.0:${GUNICORN_PORT} \
+    --log-file - \
+    --log-level ${GUNICORN_LOGLEVEL} \
+    --access-logfile - \
+    --worker-tmp-dir /dev/shm \
+    --workers=${GUNICORN_WORKERS} \
+    --threads=${GUNICORN_THREADS} \
+    --worker-class=gthread
